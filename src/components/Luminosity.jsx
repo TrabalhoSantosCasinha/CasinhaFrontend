@@ -146,7 +146,7 @@ export default function LuminosityCard({ status, history, range, onRange, now })
         <span className="card-icon sun">☀️</span>
         <div className="card-title">
           <h2>Luminosidade ambiente</h2>
-          <p className="muted">Sensor LDR no GPIO 34 · atualizado {timeAgo(lum?.updatedAt, now)}</p>
+          <p className="muted">Sensor de luz no GPIO 32 · atualizado {timeAgo(lum?.updatedAt, now)}</p>
         </div>
         <div className="segmented small" role="group" aria-label="Quantidade de leituras no gráfico">
           {RANGES.map((r) => (

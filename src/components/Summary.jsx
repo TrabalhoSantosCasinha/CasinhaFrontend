@@ -32,6 +32,14 @@ export default function Summary({ status, now, goTo }) {
       />
       <Tile icon={level.icon} label="Luz ambiente" value={lum != null ? `${lum}%` : '--'} detail={level.label} />
       <Tile
+        icon={s?.rain?.raining ? '🌧️' : '🌤️'}
+        label="Chuva"
+        value={s?.rain?.raining == null ? '--' : s.rain.raining ? 'Chovendo' : 'Sem chuva'}
+        detail={s?.rain?.protectionEnabled ? 'proteção ativa' : 'proteção desligada'}
+        tone={s?.rain?.raining ? 'bad' : undefined}
+        onClick={() => goTo('automacao')}
+      />
+      <Tile
         icon="💡"
         label="Luzes acesas"
         value={`${lampsOn} de 3`}

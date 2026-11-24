@@ -60,6 +60,14 @@ function deviceState(d, status) {
       name: d.label,
     }
   }
+  if (d.key === 'rain') {
+    const r = status.rain
+    return {
+      state: r?.raining == null ? null : r.raining ? 'Chovendo' : 'Sem chuva',
+      updatedAt: r?.updatedAt,
+      name: d.label,
+    }
+  }
   const s = d.key.startsWith('lamp') ? status.lamps.find((l) => l.key === d.key) : status[d.key]
   return {
     state: s?.state ? STATE_LABEL[s.state] ?? s.state : null,
@@ -69,12 +77,13 @@ function deviceState(d, status) {
 }
 
 const WIRING = [
-  { part: 'LDR (sensor de luz)', how: '3V3 → LDR → GPIO 34 → resistor 10 kΩ → GND (divisor de tensão)' },
+  { part: 'Sensor de luz (módulo LDR)', how: 'VCC → 3V3 · GND → GND · DO → GPIO 32' },
+  { part: 'Sensor de chuva (FC-37 + YL-38)', how: 'VCC → 3V3 · GND → GND · DO → GPIO 35 · placa FC-37 nos 2 pinos do outro lado do módulo' },
   { part: 'LED Luz 1', how: 'GPIO 25 → resistor 220 Ω → perna maior do LED; perna menor → GND' },
   { part: 'LED Luz 2', how: 'GPIO 26 → resistor 220 Ω → LED → GND' },
   { part: 'LED Luz 3', how: 'GPIO 27 → resistor 220 Ω → LED → GND' },
-  { part: 'Servo da janela', how: 'Sinal (laranja) → GPIO 13 · VCC (vermelho) → 5 V · GND (marrom) → GND' },
-  { part: 'Servo do varal', how: 'Sinal (laranja) → GPIO 33 · VCC (vermelho) → 5 V · GND (marrom) → GND' },
+  { part: 'Servo da janela', how: 'Sinal (laranja) → GPIO 13 · VCC (vermelho) → VIN (5 V) · GND (marrom) → GND' },
+  { part: 'Servo do varal', how: 'Sinal (laranja) → GPIO 33 · VCC (vermelho) → VIN (5 V) · GND (marrom) → GND' },
 ]
 
 export default function Devices({ status, backendOk, now }) {
@@ -225,7 +234,7 @@ export default function Devices({ status, backendOk, now }) {
         </div>
         <div className="tips">
           <p>⚠️ <strong>Servos:</strong> use uma fonte 5 V externa (os dois juntos puxam mais corrente do que a USB aguenta) e ligue o GND da fonte no GND do ESP32.</p>
-          <p>💡 <strong>LDR:</strong> use o GPIO 34 (só entrada, ADC1) — os pinos do ADC2 não funcionam com o Wi-Fi ligado.</p>
+          <p>💡 <strong>Sensores:</strong> luz no GPIO 32 e chuva no GPIO 35. Os dois módulos vão no 3V3, nunca no 5 V dos servos.</p>
           <p>🔧 <strong>Calibração:</strong> abra o Serial Monitor (115200) e veja o valor cru do LDR no claro e no escuro para ajustar LDR_DARK e LDR_LIGHT.</p>
         </div>
       </section>

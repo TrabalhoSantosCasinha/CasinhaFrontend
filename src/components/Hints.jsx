@@ -47,6 +47,20 @@ function buildHints(status, backendError, actions, now) {
     return hints
   }
 
+  const exposed = (status.window.state === 'open' && !status.window.pending)
+    || (status.clothesline.state === 'extended' && !status.clothesline.pending)
+  if (status.rain?.raining && exposed) {
+    hints.push({
+      tone: 'warn',
+      icon: '🌧️',
+      title: 'Está chovendo e a casa não está protegida',
+      text: status.rain.protectionEnabled
+        ? 'A proteção contra chuva já mandou fechar. Se não fechou, use o botão.'
+        : 'A proteção contra chuva está desligada (aba Automação).',
+      action: { label: 'Fechar tudo', run: () => actions.scene({ id: 'vai-chover' }) },
+    })
+  }
+
   const lum = status.luminosity.value
   const dark = lum != null && lum <= status.automation.darkThreshold
   const bright = lum != null && lum >= status.automation.brightThreshold

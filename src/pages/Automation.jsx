@@ -120,6 +120,50 @@ function describe(values, lamps) {
   return `${parts.slice(0, -1).join(', ')} e ${parts.at(-1)}`
 }
 
+function RainProtection({ settings, status, onSave, now }) {
+  const [saving, setSaving] = useState(false)
+  const enabled = settings.rain?.enabled ?? false
+  const rain = status?.rain
+  const toggle = async () => {
+    setSaving(true)
+    await onSave({ rain: { enabled: !enabled } })
+    setSaving(false)
+  }
+  let now_ = 'Aguardando leitura do sensor…'
+  if (rain?.raining === true) now_ = `🌧️ Chovendo${rain.since ? ` desde ${formatTime(rain.since)}` : ''}`
+  else if (rain?.raining === false) now_ = '🌤️ Sem chuva'
+
+  return (
+    <section className={`card auto-hero ${enabled ? 'on' : ''}`}>
+      <div className="auto-hero-text">
+        <span className="card-icon big">🌧️</span>
+        <div>
+          <h2>Proteção contra chuva</h2>
+          <p className="muted">
+            Quando o sensor de chuva ficar <strong>molhado</strong>, a casa roda a cena <strong>“Vai chover”</strong>:
+            fecha a janela e recolhe o varal. Enquanto estiver chovendo, a automação por luminosidade não abre a janela
+            nem estende o varal.
+          </p>
+          <p className="small-text">
+            <strong>Agora:</strong> {now_}
+            {rain?.lastRun && <> · última proteção {timeAgo(rain.lastRun, now)}</>}
+          </p>
+        </div>
+      </div>
+      <button
+        className={`big-switch xl ${enabled ? 'on' : ''}`}
+        role="switch"
+        aria-checked={enabled}
+        onClick={toggle}
+        disabled={saving}
+      >
+        <span className="big-switch-knob" />
+        <span className="big-switch-text">{enabled ? 'Ativa' : 'Desligada'}</span>
+      </button>
+    </section>
+  )
+}
+
 export default function Automation({ settings, status, onSave, now }) {
   const [draft, setDraft] = useState(() => structuredClone(settings.automation))
   const [saving, setSaving] = useState(false)
@@ -177,6 +221,8 @@ export default function Automation({ settings, status, onSave, now }) {
           <span className="big-switch-text">{draft.enabled ? 'Ativa' : 'Desligada'}</span>
         </button>
       </section>
+
+      <RainProtection settings={settings} status={status} onSave={onSave} now={now} />
 
       <div className="auto-status card">
         <div className="auto-status-item">
