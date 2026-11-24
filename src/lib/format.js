@@ -91,3 +91,20 @@ export const ACTIVITY_META = {
   error: { icon: '⚠️', label: 'Erro' },
   system: { icon: '⚙️', label: 'Sistema' },
 }
+
+// Códigos de tempo WMO usados pela Open-Meteo
+export function weatherInfo(code) {
+  if (code == null) return { icon: '❔', label: 'Sem dados' }
+  if (code === 0) return { icon: '☀️', label: 'Céu limpo' }
+  if (code <= 2) return { icon: '🌤️', label: 'Poucas nuvens' }
+  if (code === 3) return { icon: '☁️', label: 'Nublado' }
+  if (code <= 48) return { icon: '🌫️', label: 'Neblina' }
+  if (code <= 57) return { icon: '🌦️', label: 'Garoa' }
+  if (code <= 67) return { icon: '🌧️', label: 'Chuva' }
+  if (code <= 77) return { icon: '🌨️', label: 'Neve' }
+  if (code <= 82) return { icon: '🌧️', label: 'Pancadas de chuva' }
+  return { icon: '⛈️', label: 'Tempestade' }
+}
+
+// "2026-11-23T22:00" (horário local da cidade) -> "22h"
+export const forecastHour = (t) => (t ? `${Number(t.slice(11, 13))}h` : '')

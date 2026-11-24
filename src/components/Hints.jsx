@@ -49,6 +49,15 @@ function buildHints(status, backendError, actions, now) {
 
   const exposed = (status.window.state === 'open' && !status.window.pending)
     || (status.clothesline.state === 'extended' && !status.clothesline.pending)
+  if (!status.rain?.raining && status.forecast?.alert && exposed) {
+    hints.push({
+      tone: 'warn',
+      icon: '🌦️',
+      title: `Previsão de chuva às ${Number(status.forecast.nextRainAt?.slice(11, 13))}h e a casa está aberta`,
+      text: `${status.forecast.maxProb}% de chance de chuva em ${status.forecast.city} nas próximas ${status.forecast.hoursAhead} h.`,
+      action: { label: 'Fechar tudo', run: () => actions.scene({ id: 'vai-chover' }) },
+    })
+  }
   if (status.rain?.raining && exposed) {
     hints.push({
       tone: 'warn',

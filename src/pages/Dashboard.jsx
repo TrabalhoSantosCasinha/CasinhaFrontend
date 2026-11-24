@@ -1,4 +1,5 @@
 import ActivityList from '../components/ActivityList'
+import ForecastCard from '../components/Forecast'
 import Hints from '../components/Hints'
 import LightsCard from '../components/Lights'
 import LuminosityCard from '../components/Luminosity'
@@ -21,6 +22,7 @@ export default function Dashboard({ status, history, range, onRange, scenes, bus
       <Hints status={status} backendError={backendError} actions={actions} now={now} />
       <Summary status={status} now={now} goTo={goTo} />
       <Scenes scenes={scenes} status={status} busy={busy} offline={offline} onRun={actions.scene} />
+      <ForecastCard status={status} now={now} goTo={goTo} />
 
       <div className="row-2-1">
         <LuminosityCard status={status} history={history} range={range} onRange={onRange} now={now} />

@@ -2119,3 +2119,108 @@ input[type='range'] {
     border-bottom: 1px solid var(--border);
   }
 }
+
+/* ================================================================
+   Previsão do tempo
+   ================================================================ */
+.forecast.is-alert {
+  border-color: color-mix(in oklab, var(--accent) 45%, var(--border));
+}
+
+.forecast-summary {
+  margin: 4px 0 14px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--card-2);
+  font-weight: 600;
+}
+
+.forecast-summary.alert {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.forecast-bars {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(34px, 1fr);
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.fbar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  opacity: 0.55;
+}
+
+.fbar.in-window {
+  opacity: 1;
+}
+
+.fbar-pct,
+.fbar-hour {
+  font-size: 11px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.fbar.high .fbar-pct {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.fbar-track {
+  position: relative;
+  width: 100%;
+  max-width: 28px;
+  height: 90px;
+  border-radius: 6px;
+  background: var(--card-2);
+  overflow: hidden;
+}
+
+.fbar-fill {
+  position: absolute;
+  inset: auto 0 0;
+  border-radius: 6px 6px 0 0;
+  background: color-mix(in oklab, var(--accent) 45%, var(--card-2));
+}
+
+.fbar.high .fbar-fill {
+  background: var(--accent);
+}
+
+.fbar-threshold {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 1px dashed var(--muted);
+}
+
+.city-search {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.city-search input {
+  flex: 1 1 180px;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+  color: var(--text);
+  font: inherit;
+}
+
+.city-results {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}

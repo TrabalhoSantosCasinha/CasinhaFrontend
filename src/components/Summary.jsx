@@ -35,8 +35,10 @@ export default function Summary({ status, now, goTo }) {
         icon={s?.rain?.raining ? '🌧️' : '🌤️'}
         label="Chuva"
         value={s?.rain?.raining == null ? '--' : s.rain.raining ? 'Chovendo' : 'Sem chuva'}
-        detail={s?.rain?.protectionEnabled ? 'proteção ativa' : 'proteção desligada'}
-        tone={s?.rain?.raining ? 'bad' : undefined}
+        detail={s?.forecast?.maxProb != null
+          ? `previsão ${s.forecast.maxProb}% em ${s.forecast.hoursAhead} h`
+          : s?.rain?.protectionEnabled ? 'proteção ativa' : 'proteção desligada'}
+        tone={s?.rain?.raining ? 'bad' : s?.forecast?.alert ? 'warm' : undefined}
         onClick={() => goTo('automacao')}
       />
       <Tile

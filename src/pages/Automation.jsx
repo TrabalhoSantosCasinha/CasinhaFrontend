@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { COMMAND_LABEL, formatTime, timeAgo } from '../lib/format'
+import { api } from '../lib/api'
+import { COMMAND_LABEL, forecastHour, formatTime, timeAgo } from '../lib/format'
 
 const ACTION_OPTIONS = {
   lamp: ['on', 'off', 'none'],
@@ -164,6 +165,129 @@ function RainProtection({ settings, status, onSave, now }) {
   )
 }
 
+function ForecastSettings({ settings, status, onSave, now }) {
+  const cfg = settings.forecast
+  const f = status?.forecast
+  const [draft, setDraft] = useState({ threshold: cfg?.threshold ?? 70, hoursAhead: cfg?.hoursAhead ?? 2 })
+  const [query, setQuery] = useState('')
+  const [results, setResults] = useState(null)
+  const [searchError, setSearchError] = useState(null)
+  const [saving, setSaving] = useState(false)
+  if (!cfg) return null
+  const dirty = draft.threshold !== cfg.threshold || draft.hoursAhead !== cfg.hoursAhead
+
+  const save = async (patch) => {
+    setSaving(true)
+    const ok = await onSave({ forecast: patch })
+    setSaving(false)
+    return ok
+  }
+  const search = async (e) => {
+    e.preventDefault()
+    setSearchError(null)
+    try {
+      const list = await api(`/forecast/cities?q=${encodeURIComponent(query)}`)
+      setResults(list)
+      if (!list.length) setSearchError('Nenhuma cidade encontrada')
+    } catch (err) {
+      setSearchError(err.message)
+    }
+  }
+  const pick = async (c) => {
+    if (await save(c)) {
+      setResults(null)
+      setQuery('')
+    }
+  }
+
+  let live = 'Aguardando a previsão…'
+  if (!cfg.enabled) live = 'Desligada.'
+  else if (f?.error && !f?.hourly?.length) live = `Sem previsão: ${f.error}`
+  else if (f?.alert) live = `🌧️ ${f.maxProb}% de chance de chuva às ${forecastHour(f.nextRainAt)} — casa protegida`
+  else if (f?.maxProb != null) live = `🌤️ No máximo ${f.maxProb}% nas próximas ${cfg.hoursAhead} h — nada a fazer`
+
+  return (
+    <section className={`card auto-hero ${cfg.enabled ? 'on' : ''}`}>
+      <div className="auto-hero-text">
+        <span className="card-icon big">🌦️</span>
+        <div>
+          <h2>Proteção pela previsão do tempo</h2>
+          <p className="muted">
+            A cada 10 min o backend consulta a <strong>Open-Meteo</strong> (grátis, sem chave). Se a chance de chuva nas
+            próximas <strong>{draft.hoursAhead} h</strong> chegar a <strong>{draft.threshold}%</strong>, a casa roda
+            <strong> “Vai chover”</strong> antes de a chuva começar. O sensor de chuva continua confirmando no local.
+          </p>
+          <p className="small-text">
+            <strong>Agora:</strong> {live}
+            {f?.lastRun && <> · última proteção {timeAgo(f.lastRun, now)}</>}
+          </p>
+
+          <label className="confirm-row">
+            <span>Chance de chuva para agir: <strong>{draft.threshold}%</strong></span>
+            <input
+              type="range"
+              min="10"
+              max="100"
+              step="5"
+              value={draft.threshold}
+              onChange={(e) => setDraft((d) => ({ ...d, threshold: Number(e.target.value) }))}
+            />
+          </label>
+          <label className="confirm-row">
+            <span>Olhar as próximas <strong>{draft.hoursAhead} h</strong></span>
+            <input
+              type="range"
+              min="1"
+              max="12"
+              value={draft.hoursAhead}
+              onChange={(e) => setDraft((d) => ({ ...d, hoursAhead: Number(e.target.value) }))}
+            />
+          </label>
+          {dirty && (
+            <button className="btn primary small" onClick={() => save(draft)} disabled={saving}>
+              {saving ? 'Salvando…' : 'Salvar limites'}
+            </button>
+          )}
+
+          <p className="small-text">
+            📍 <strong>Cidade:</strong> {cfg.city}
+            {cfg.region && ` (${cfg.region})`}
+          </p>
+          <form className="city-search" onSubmit={search}>
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Trocar cidade (ex.: Campinas)"
+              aria-label="Buscar cidade"
+            />
+            <button className="btn small" type="submit" disabled={query.trim().length < 2}>Buscar</button>
+          </form>
+          {searchError && <p className="muted small-text">{searchError}</p>}
+          {results?.length > 0 && (
+            <div className="city-results">
+              {results.map((c) => (
+                <button key={`${c.latitude},${c.longitude}`} className="btn ghost small" onClick={() => pick(c)} disabled={saving}>
+                  {c.name} · {c.region}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+      <button
+        className={`big-switch xl ${cfg.enabled ? 'on' : ''}`}
+        role="switch"
+        aria-checked={cfg.enabled}
+        onClick={() => save({ enabled: !cfg.enabled })}
+        disabled={saving}
+      >
+        <span className="big-switch-knob" />
+        <span className="big-switch-text">{cfg.enabled ? 'Ativa' : 'Desligada'}</span>
+      </button>
+    </section>
+  )
+}
+
 export default function Automation({ settings, status, onSave, now }) {
   const [draft, setDraft] = useState(() => structuredClone(settings.automation))
   const [saving, setSaving] = useState(false)
@@ -223,6 +347,7 @@ export default function Automation({ settings, status, onSave, now }) {
       </section>
 
       <RainProtection settings={settings} status={status} onSave={onSave} now={now} />
+      <ForecastSettings settings={settings} status={status} onSave={onSave} now={now} />
 
       <div className="auto-status card">
         <div className="auto-status-item">
